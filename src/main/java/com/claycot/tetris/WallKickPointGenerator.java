@@ -21,10 +21,10 @@ public class WallKickPointGenerator {
             { new Point(0, 1), new Point(0, 1), new Point(0, 1), new Point(0, -1), new Point(0, 2) }
     };
     private static final Point[][] oOffsets = new Point[][] {
-            { new Point(0, 0), new Point(0, 0), new Point(0, 0), new Point(0, 0), new Point(0, 0) },
-            { new Point(0, -1), new Point(0, -1), new Point(0, -1), new Point(0, -1), new Point(0, -1) },
-            { new Point(-1, -1), new Point(-1, -1), new Point(-1, -1), new Point(-1, -1), new Point(-1, -1) },
-            { new Point(-1, 0), new Point(-1, 0), new Point(-1, 0), new Point(-1, 0), new Point(-1, 0) },
+            { new Point(0, 0) },
+            { new Point(0, -1) },
+            { new Point(-1, -1) },
+            { new Point(-1, 0) },
     };
     private static final Map<Shape, Point[][]> OFFSET_MAP = Map.of(Shape.I, iOffsets, Shape.O, oOffsets);
 
