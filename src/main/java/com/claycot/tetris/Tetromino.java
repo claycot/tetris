@@ -21,7 +21,7 @@ public class Tetromino {
         this.orientation = Orientation.TWELVE_OCLOCK;
     }
 
-    // translate a piece by translating all of its squares
+    // translate a tetromino by translating all of its squares
     public void translate(Point delta, boolean positive) {
         if (positive) {
             for (Point p : squares) {
@@ -34,14 +34,14 @@ public class Tetromino {
         }
     }
 
-    // rotate a piece by rotating all of its squares, applying kicks, and updating
+    // rotate a tetromino by rotating all of its squares, applying kicks, and updating
     // orientation
     public void rotate(boolean cw, HexColor[][] existingSquares) {
         // get kicks
         WallKickPointGenerator kickGenerator = new WallKickPointGenerator(this.shape, cw, this.orientation);
         Point[] kicks = kickGenerator.getKicks();
 
-        // rotate the piece
+        // rotate the tetromino
         for (Point p : squares) {
             p.rotate(cw);
         }
@@ -49,7 +49,7 @@ public class Tetromino {
         // loop through the kicks, updating orientation and returning if a valid one is
         // found
         for (Point kick : kicks) {
-            // translate the piece by the kick
+            // translate the tetromino by the kick
             this.translate(kick, true);
 
             // if the new location is valid, update the orientation and return
@@ -69,8 +69,8 @@ public class Tetromino {
         }
     }
 
-    // the piece will never go outside of the bounding box
-    // therefore, the piece is valid if it doesn't overlap any existing squares
+    // the tetromino will never go outside of the bounding box
+    // therefore, the tetromino is valid if it doesn't overlap any existing squares
     private boolean validatePosition(HexColor[][] existingSquares) {
         for (Point p : this.squares) {
             if (existingSquares[p.getX()][p.getY()] != null) {

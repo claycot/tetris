@@ -6,14 +6,14 @@ import java.util.Random;
 public class ShuffleRandomizer implements Randomizer {
     private static final Shape[] shapes = Shape.values();
     private static final Random random = new Random();
+    private static final int[] sequence = new int[shapes.length];
 
     private static final ShuffleRandomizer instance = new ShuffleRandomizer();
 
-    private static int[] sequence = new int[shapes.length];
     private static int bagPtr = 0;
 
     private ShuffleRandomizer() {
-        shuffleSequence();
+        reset();
     }
 
     public static ShuffleRandomizer getInstance() {
@@ -24,12 +24,20 @@ public class ShuffleRandomizer implements Randomizer {
     public Shape getRandom() {
         // if sequence is exhausted, shuffle and reset the pointer
         if (bagPtr >= shapes.length) {
-            shuffleSequence();
-            bagPtr = 0;
+            reset();
         }
 
         // return the shape at the index indicated by the sequence
         return shapes[sequence[bagPtr++]];
+    }
+
+    public int getSequenceLength() {
+        return ShuffleRandomizer.sequence.length;
+    }
+
+    public void reset() {
+        shuffleSequence();
+        bagPtr = 0;
     }
 
     // shuffle the shapes by generating a new sequence
