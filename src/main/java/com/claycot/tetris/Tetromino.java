@@ -89,7 +89,7 @@ public class Tetromino {
         return this.width;
     }
 
-    public HexColor getColor() {
+    public HexColor getHexColor() {
         return this.hexColor;
     }
 

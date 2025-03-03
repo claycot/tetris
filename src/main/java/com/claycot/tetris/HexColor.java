@@ -1,5 +1,7 @@
 package com.claycot.tetris;
 
+import java.awt.Color;
+
 public enum HexColor {
     CYAN("#00ffff"),
     BLUE("#0000ff"),
@@ -18,5 +20,9 @@ public enum HexColor {
 
     public String getHexValue() {
         return this.hexValue;
+    }
+
+    public Color getColor() {
+        return Color.decode(this.hexValue);
     }
 }

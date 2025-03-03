@@ -39,6 +39,10 @@ public class Point {
         return this;
     }
 
+    public Point copy() {
+        return new Point(this.x, this.y);
+    }
+
     // rotate the point about the origin in 90-degree increments
     public void rotate(boolean cw) {
         int originalX = this.x;
