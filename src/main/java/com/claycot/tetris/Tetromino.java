@@ -1,111 +1,99 @@
 package com.claycot.tetris;
-import java.util.Arrays;
-import java.util.LinkedList;
+
 import java.util.List;
 
-public class Tetromino extends Piece {
-    Tetromino(Shape shape) {
-        super(
-            shape,
-            getColor(shape),
-            getWidth(shape),
-            getHeight(shape),
-            getSquares(shape)
-        );
+public class Tetromino {
+    private final Shape shape;
+    private final HexColor hexColor;
+    private final int width;
+    private final int height;
+    private final List<Point> squares;
+
+    private Orientation orientation;
+
+    public Tetromino(Shape shape, HexColor hexColor, int width, int height, List<Point> squares) {
+        this.shape = shape;
+        this.hexColor = hexColor;
+        this.width = width;
+        this.height = height;
+        this.squares = squares;
+
+        this.orientation = Orientation.TWELVE_OCLOCK;
     }
 
-    private static int getWidth(Shape shape) {
-        if (shape == Shape.I) {
-            return 5;
+    // translate a piece by translating all of its squares
+    public void translate(Point delta, boolean positive) {
+        if (positive) {
+            for (Point p : squares) {
+                p.translateAdd(delta);
+            }
         } else {
-            return 3;
+            for (Point p : squares) {
+                p.translateSubtract(delta);
+            }
         }
     }
 
-    private static int getHeight(Shape shape) {
-        if (shape == Shape.I) {
-            return 5;
-        } else {
-            return 3;
+    // rotate a piece by rotating all of its squares, applying kicks, and updating
+    // orientation
+    public void rotate(boolean cw, HexColor[][] existingSquares) {
+        // get kicks
+        WallKickPointGenerator kickGenerator = new WallKickPointGenerator(this.shape, cw, this.orientation);
+        Point[] kicks = kickGenerator.getKicks();
+
+        // rotate the piece
+        for (Point p : squares) {
+            p.rotate(cw);
+        }
+
+        // loop through the kicks, updating orientation and returning if a valid one is
+        // found
+        for (Point kick : kicks) {
+            // translate the piece by the kick
+            this.translate(kick, true);
+
+            // if the new location is valid, update the orientation and return
+            if (this.validatePosition(existingSquares)) {
+                this.orientation = this.orientation.rotate(cw);
+                return;
+            }
+            // if not valid, undo the translation
+            else {
+                this.translate(kick, false);
+            }
+        }
+
+        // if a valid kick isn't found, undo the rotation
+        for (Point p : squares) {
+            p.rotate(!cw);
         }
     }
 
-    private static HexColor getColor(Shape shape) {
-        switch (shape) {
-            case I:
-                return HexColor.CYAN;
-            case J:
-                return HexColor.BLUE;
-            case L:
-                return HexColor.ORANGE;
-            case O:
-                return HexColor.YELLOW;
-            case S:
-                return HexColor.GREEN;
-            case T:
-                return HexColor.PURPLE;
-            case Z:
-                return HexColor.RED;
-            default:
-                return HexColor.GRAY;
+    // the piece will never go outside of the bounding box
+    // therefore, the piece is valid if it doesn't overlap any existing squares
+    private boolean validatePosition(HexColor[][] existingSquares) {
+        for (Point p : this.squares) {
+            if (existingSquares[p.getX()][p.getY()] != null) {
+                return false;
+            }
         }
+
+        return true;
     }
 
-    private static List<Point> getSquares(Shape shape) {
-        switch (shape) {
-            case I:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 0),
-                                new Point(0, 0),
-                                new Point(1, 0),
-                                new Point(2, 0)));
-            case J:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 1),
-                                new Point(-1, 0),
-                                new Point(0, 0),
-                                new Point(1, 0)));
-            case L:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 0),
-                                new Point(0, 0),
-                                new Point(1, 0),
-                                new Point(1, 1)));
-            case O:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(0, 0),
-                                new Point(1, 0),
-                                new Point(1, 1),
-                                new Point(0, 1)));
-            case S:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 0),
-                                new Point(0, 0),
-                                new Point(0, 1),
-                                new Point(1, 1)));
-            case T:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 0),
-                                new Point(0, 0),
-                                new Point(1, 0),
-                                new Point(0, 1)));
-            case Z:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(-1, 1),
-                                new Point(0, 0),
-                                new Point(1, 0),
-                                new Point(0, 1)));
-            default:
-                return new LinkedList<Point>(
-                        Arrays.asList(
-                                new Point(0, 0)));
-        }
+    public int getHeight() {
+        return this.height;
+    }
+
+    public int getWidth() {
+        return this.width;
+    }
+
+    public HexColor getColor() {
+        return this.hexColor;
+    }
+
+    public List<Point> getSquares() {
+        return this.squares;
     }
 }

@@ -1,4 +1,5 @@
 package com.claycot.tetris;
+
 public enum Orientation {
     TWELVE_OCLOCK,
     THREE_OCLOCK,

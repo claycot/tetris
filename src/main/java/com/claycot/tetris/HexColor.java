@@ -1,4 +1,5 @@
 package com.claycot.tetris;
+
 public enum HexColor {
     CYAN("#00ffff"),
     BLUE("#0000ff"),
