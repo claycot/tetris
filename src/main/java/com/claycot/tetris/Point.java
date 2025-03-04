@@ -1,4 +1,5 @@
 package com.claycot.tetris;
+
 public class Point {
     private int x;
     private int y;
@@ -36,6 +37,10 @@ public class Point {
         this.y -= subtract.getY();
 
         return this;
+    }
+
+    public Point copy() {
+        return new Point(this.x, this.y);
     }
 
     // rotate the point about the origin in 90-degree increments
