@@ -22,7 +22,8 @@ public class Tetromino {
     }
 
     // translate a tetromino by translating all of its squares
-    public void translate(Point delta, boolean positive) {
+    // only for kicks! not for public moving the tetromino
+    private void translate(Point delta, boolean positive) {
         if (positive) {
             for (Point p : squares) {
                 p.translateAdd(delta);
@@ -34,8 +35,8 @@ public class Tetromino {
         }
     }
 
-    // rotate a tetromino by rotating all of its squares, applying kicks, and updating
-    // orientation
+    // rotate a tetromino by rotating all of its squares, applying kicks, and
+    // updating orientation
     public void rotate(boolean cw, HexColor[][] existingSquares) {
         // get kicks
         WallKickPointGenerator kickGenerator = new WallKickPointGenerator(this.shape, cw, this.orientation);
@@ -51,7 +52,7 @@ public class Tetromino {
         for (Point kick : kicks) {
             // translate the tetromino by the kick
             this.translate(kick, true);
-
+            this.orientation = this.orientation.rotate(cw);
             // if the new location is valid, update the orientation and return
             if (this.validatePosition(existingSquares)) {
                 this.orientation = this.orientation.rotate(cw);
@@ -72,11 +73,11 @@ public class Tetromino {
     // the tetromino will never go outside of the bounding box
     // therefore, the tetromino is valid if it doesn't overlap any existing squares
     private boolean validatePosition(HexColor[][] existingSquares) {
-        for (Point p : this.squares) {
-            if (existingSquares[p.getX()][p.getY()] != null) {
-                return false;
-            }
-        }
+        // for (Point p : this.squares) {
+        // if (existingSquares[p.getX()][p.getY()] != null) {
+        // return false;
+        // }
+        // }
 
         return true;
     }

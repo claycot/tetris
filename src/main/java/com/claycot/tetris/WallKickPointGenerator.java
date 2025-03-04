@@ -2,9 +2,9 @@ package com.claycot.tetris;
 
 import java.util.Map;
 
-// when a piece rotation is attempted, there are 5 tests
-// each test produces a "kick" that offsets the piece
-// a successful kick offsets the piece into a valid location
+// when a tetromino rotation is attempted, there are 5 tests
+// each test produces a "kick" that offsets the tetromino
+// a successful kick offsets the tetromino into a valid location
 // this factory returns the 5 potential kicks that can be used
 public class WallKickPointGenerator {
     // offset values from https://tetris.wiki/Super_Rotation_System
