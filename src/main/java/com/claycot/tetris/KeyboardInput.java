@@ -9,7 +9,8 @@ import javax.swing.Timer;
 
 public class KeyboardInput implements KeyListener {
     // ms delay for repeated key actions (ie. holding down key)
-    public static final int REPEAT_DELAY = 150;
+    private static final int REPEAT_DELAY = 150;
+    private Game game;
 
     // create a map that will allow any key to repeat on hold
     private Map<Integer, Timer> heldKeyTimers = new HashMap<>();
@@ -17,14 +18,15 @@ public class KeyboardInput implements KeyListener {
     // remappable keys
     private Map<Integer, Runnable> keyActions = new HashMap<>();
 
-    public KeyboardInput() {
-        keyActions.put(KeyEvent.VK_LEFT, () -> System.out.println("move left"));
-        keyActions.put(KeyEvent.VK_RIGHT, () -> System.out.println("move right"));
-        keyActions.put(KeyEvent.VK_UP, () -> System.out.println("drop piece instantly"));
-        keyActions.put(KeyEvent.VK_DOWN, () -> System.out.println("hasten downwards"));
-        keyActions.put(KeyEvent.VK_SPACE, () -> System.out.println("rotate clockwise"));
-        keyActions.put(KeyEvent.VK_Z, () -> System.out.println("rotate counterclockwise"));
-        keyActions.put(KeyEvent.VK_X, () -> System.out.println("rotate clockwise"));
+    public KeyboardInput(Game game) {
+        this.game = game;
+        keyActions.put(KeyEvent.VK_LEFT, () -> this.game.moveTetrominoCenter(Movement.LEFT));
+        keyActions.put(KeyEvent.VK_RIGHT, () -> this.game.moveTetrominoCenter(Movement.RIGHT));
+        keyActions.put(KeyEvent.VK_UP, () -> this.game.moveTetrominoCenter(Movement.SLAM));
+        keyActions.put(KeyEvent.VK_DOWN, () -> this.game.moveTetrominoCenter(Movement.DROP));
+        keyActions.put(KeyEvent.VK_SPACE, () -> this.game.getTetromino().rotate(true, null));
+        keyActions.put(KeyEvent.VK_Z, () -> this.game.getTetromino().rotate(false, null));
+        keyActions.put(KeyEvent.VK_X, () -> this.game.getTetromino().rotate(true, null));
     }
 
     @Override

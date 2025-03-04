@@ -22,15 +22,16 @@ public class Game {
     private boolean[][] boardOccupied;
 
     private final Point spawnPoint = new Point(width / 2, height - 1);
-    
+
     private Tetromino activeTetromino;
     private Point activeTetrominoCenter;
     private Tetromino nextTetromino;
-    private Timer tick;
+    private Timer drawTimer;
+    private Timer gravityTimer;
 
     public Game() {
         this.frame = new JFrame();
-        this.frame.addKeyListener(new KeyboardInput());
+        this.frame.addKeyListener(new KeyboardInput(this));
 
         this.panel = new JPanel();
         this.panel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
@@ -40,7 +41,7 @@ public class Game {
         this.boardOccupied = new boolean[height][width];
 
         for (int r = height - 1; r >= 0; r--) {
-            for (int c = width - 1; c >= 0; c--) {
+            for (int c = 0; c < width; c++) {
                 JButton button = new JButton();
                 button.setPreferredSize(new Dimension(40, 40));
                 button.setBackground(HexColor.GRAY.getColor());
@@ -63,66 +64,98 @@ public class Game {
         activeTetromino = TetrominoFactory.createRandom();
         activeTetrominoCenter = spawnPoint.copy();
         nextTetromino = TetrominoFactory.createRandom();
-        tick = new Timer(200, event -> movePiece());
-        tick.setRepeats(true);
-        tick.start();
+        gravityTimer = new Timer(200, event -> applyGravityToTetromino());
+        gravityTimer.setRepeats(true);
+        gravityTimer.start();
+
+        drawTimer = new Timer(15, event -> drawBoard());
+        drawTimer.setRepeats(true);
+        drawTimer.start();
     }
 
-    private void movePiece() {
-        List<Point> squares = activeTetromino.getSquares();
-        Point nextCenter = activeTetrominoCenter.copy().translateSubtract(new Point(0, 1));
+    private void applyGravityToTetromino() {
+        boolean moved = moveTetrominoCenter(Movement.DROP);
 
-        // check if the piece can move down
-        boolean validPos = true;
-        for (Point s : squares) {
-            int globalX = nextCenter.getX() + s.getX();
-            int globalY = nextCenter.getY() + s.getY();
-
-            // if it's outside of the board or hitting another piece, stop
-            if (globalX < 0 || globalX >= width || globalY < 0 || this.boardOccupied[globalY][globalX]) {
-                validPos = false;
-                break;
-            }
-        }
-
-        // if impossible, place and get the next piece!
-        if (!validPos) {
+        // if impossible, place and get the next tetromino!
+        if (!moved) {
+            // write the position
+            List<Point> squares = activeTetromino.getSquares();
             for (Point s : squares) {
                 int globalX = activeTetrominoCenter.getX() + s.getX();
                 int globalY = activeTetrominoCenter.getY() + s.getY();
-    
-                // if it's outside of the board or hitting another piece, solidify the position
+
                 if (globalX >= 0 && globalX < width && globalY >= 0 && globalY < height) {
                     this.boardOccupied[globalY][globalX] = true;
                 }
             }
+
+            // move to the next tetromino, and generate a new next
             activeTetromino = nextTetromino;
             activeTetrominoCenter = spawnPoint.copy();
             nextTetromino = TetrominoFactory.createRandom();
         }
-        // otherwise, display the new location and continue
-        else {
-            for (Point s : squares) {
-                int lastX = activeTetrominoCenter.getX() + s.getX();
-                int lastY = activeTetrominoCenter.getY() + s.getY();
+    }
 
-                if (lastX >= 0 && lastX < width && lastY >= 0 && lastY < height) {
-                    this.boardDisplay[lastY][lastX].setBackground(HexColor.GRAY.getColor());
+    private void drawBoard() {
+        List<Point> squares = activeTetromino.getSquares();
+
+        // wipe any non-solidified squares
+        for (int r = 0; r < height; r++) {
+            for (int c = 0; c < width; c++) {
+                if (!this.boardOccupied[r][c]) {
+                    this.boardDisplay[r][c].setBackground(HexColor.GRAY.getColor());
                 }
             }
-             
-            for (Point s : squares) {
-                int nextX = nextCenter.getX() + s.getX();
-                int nextY = nextCenter.getY() + s.getY();
+        }
 
-                if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
-                    this.boardDisplay[nextY][nextX].setBackground(activeTetromino.getHexColor().getColor());
-                }
+        // draw new location
+        for (Point s : squares) {
+            int globalX = activeTetrominoCenter.getX() + s.getX();
+            int globalY = activeTetrominoCenter.getY() + s.getY();
+
+            if (globalX >= 0 && globalX < width && globalY >= 0 && globalY < height) {
+                this.boardDisplay[globalY][globalX].setBackground(activeTetromino.getHexColor().getColor());
             }
-            activeTetrominoCenter = nextCenter;
         }
 
         this.panel.revalidate();
         this.panel.repaint();
+    }
+
+    public Tetromino getTetromino() {
+        return this.activeTetromino;
+    }
+
+    public Point getTetrominoCenter() {
+        return this.activeTetrominoCenter;
+    }
+
+    public boolean moveTetrominoCenter(Movement movement) {
+        // get the squares that make up the tetromino
+        List<Point> squares = activeTetromino.getSquares();
+
+        // get the next location
+        Point dir = movement.getPoint();
+        Point nextCenter = activeTetrominoCenter.copy().translateAdd(dir);
+
+        // check if the tetromino can move in that direction
+        boolean canMove = true;
+        for (Point s : squares) {
+            int nextX = nextCenter.getX() + s.getX();
+            int nextY = nextCenter.getY() + s.getY();
+
+            // if the square is outside of the board or hitting another tetromino, abandon the move
+            if (nextX < 0 || nextX >= width || nextY < 0 || this.boardOccupied[nextY][nextX]) {
+                canMove = false;
+                break;
+            }
+        }
+
+        // if possible, update the location to continue
+        if (canMove) {
+            activeTetrominoCenter = nextCenter;
+        }
+
+        return canMove;
     }
 }
