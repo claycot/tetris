@@ -1,5 +1,6 @@
 package com.claycot.tetris;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Tetromino {
@@ -21,64 +22,48 @@ public class Tetromino {
         this.orientation = Orientation.TWELVE_OCLOCK;
     }
 
-    // translate a tetromino by translating all of its squares
-    // only for kicks! not for public moving the tetromino
-    private void translate(Point delta, boolean positive) {
-        if (positive) {
-            for (Point p : squares) {
-                p.translateAdd(delta);
-            }
-        } else {
-            for (Point p : squares) {
-                p.translateSubtract(delta);
-            }
-        }
-    }
-
     // rotate a tetromino by rotating all of its squares, applying kicks, and
     // updating orientation
-    public void rotate(boolean cw, HexColor[][] existingSquares) {
+    public void rotate(boolean cw, Point globalCenter, boolean[][] occupied) {
         // get kicks
         WallKickPointGenerator kickGenerator = new WallKickPointGenerator(this.shape, cw, this.orientation);
         Point[] kicks = kickGenerator.getKicks();
 
-        // rotate the tetromino
-        for (Point p : squares) {
-            p.rotate(cw);
-        }
+        // copy the current squares
+        List<Point> squaresCopy = new ArrayList<>(this.squares);
 
         // loop through the kicks, updating orientation and returning if a valid one is
         // found
         for (Point kick : kicks) {
-            // translate the tetromino by the kick
-            this.translate(kick, true);
-            this.orientation = this.orientation.rotate(cw);
-            // if the new location is valid, update the orientation and return
-            if (this.validatePosition(existingSquares)) {
+            // if the kick passed, update the orientation and return
+            if (this.tryMove(squaresCopy, kick, globalCenter, occupied)) {
+                // update the orientation
                 this.orientation = this.orientation.rotate(cw);
+                // rotate the tetromino
+                for (Point p : squares) {
+                    p.rotate(cw);
+                }
+                // kick its center
+                globalCenter.translateAdd(kick);
                 return;
             }
-            // if not valid, undo the translation
-            else {
-                this.translate(kick, false);
-            }
-        }
-
-        // if a valid kick isn't found, undo the rotation
-        for (Point p : squares) {
-            p.rotate(!cw);
         }
     }
 
     // the tetromino will never go outside of the bounding box
     // therefore, the tetromino is valid if it doesn't overlap any existing squares
-    private boolean validatePosition(HexColor[][] existingSquares) {
-        // for (Point p : this.squares) {
-        // if (existingSquares[p.getX()][p.getY()] != null) {
-        // return false;
-        // }
-        // }
-
+    private boolean tryMove(List<Point> squareCopy, Point move, Point center, boolean[][] occupied) {
+        System.out.println(String.format("validating position for tetromino at %s", center.toString()));
+        for (Point p : squareCopy) {
+            int x = p.getX() + center.getX();
+            int y = p.getY() + center.getY();
+            int boardHeight = occupied.length;
+            int boardWidth = occupied[0].length;
+            if (x < 0 || x >= boardWidth || y < 0 || y >= boardHeight || occupied[y][x]) {
+                return false;
+            }
+        }
+        System.out.println("passed!");
         return true;
     }
 

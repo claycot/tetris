@@ -1,5 +1,6 @@
 package com.claycot.tetris;
 
+import java.util.Arrays;
 import java.util.Map;
 
 // when a tetromino rotation is attempted, there are 5 tests
@@ -40,6 +41,7 @@ public class WallKickPointGenerator {
 
     // to offset from A -> B, subtract B from A
     public Point[] getKicks() {
+        System.out.println(String.format("getting kicks for shape %s with orientation %s in clockwise: %b direction", this.shape, this.orientation, this.cw));
         int initialOrientation = this.orientation.getOrdinal();
         int nextOrientation = this.orientation.rotate(this.cw).getOrdinal();
 
@@ -47,9 +49,9 @@ public class WallKickPointGenerator {
         Point[] kicks = new Point[offsets[initialOrientation].length];
 
         for (int i = 0; i < kicks.length; i++) {
-            kicks[i] = offsets[initialOrientation][i].translateSubtract(offsets[nextOrientation][i]);
+            kicks[i] = offsets[initialOrientation][i].copy().translateSubtract(offsets[nextOrientation][i]);
         }
-
+        System.out.println("Kicks: " + Arrays.toString(kicks));
         return kicks;
     }
 

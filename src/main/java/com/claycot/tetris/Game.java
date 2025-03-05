@@ -122,6 +122,10 @@ public class Game {
         this.panel.repaint();
     }
 
+    public boolean[][] getOccupied() {
+        return this.boardOccupied;
+    }
+
     public Tetromino getTetromino() {
         return this.activeTetromino;
     }
@@ -145,7 +149,7 @@ public class Game {
             int nextY = nextCenter.getY() + s.getY();
 
             // if the square is outside of the board or hitting another tetromino, abandon the move
-            if (nextX < 0 || nextX >= width || nextY < 0 || this.boardOccupied[nextY][nextX]) {
+            if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height || this.boardOccupied[nextY][nextX]) {
                 canMove = false;
                 break;
             }

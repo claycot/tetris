@@ -8,11 +8,14 @@ import java.util.Map;
 import javax.swing.Timer;
 
 public class KeyboardInput implements KeyListener {
-    // ms delay for repeated key actions (ie. holding down key)
+    // ms delay for repeated key actions (ie. quickly pressing the same key)
+    private static final int DEBOUNCE_DELAY = 50;
+    // ms delay for repeated held key actions (ie. holding the key to repeat action)
     private static final int REPEAT_DELAY = 150;
     private Game game;
 
     // create a map that will allow any key to repeat on hold
+    private Map<Integer, Timer> debounceTimers = new HashMap<>();
     private Map<Integer, Timer> heldKeyTimers = new HashMap<>();
 
     // remappable keys
@@ -24,9 +27,9 @@ public class KeyboardInput implements KeyListener {
         keyActions.put(KeyEvent.VK_RIGHT, () -> this.game.moveTetrominoCenter(Movement.RIGHT));
         keyActions.put(KeyEvent.VK_UP, () -> this.game.moveTetrominoCenter(Movement.SLAM));
         keyActions.put(KeyEvent.VK_DOWN, () -> this.game.moveTetrominoCenter(Movement.DROP));
-        keyActions.put(KeyEvent.VK_SPACE, () -> this.game.getTetromino().rotate(true, null));
-        keyActions.put(KeyEvent.VK_Z, () -> this.game.getTetromino().rotate(false, null));
-        keyActions.put(KeyEvent.VK_X, () -> this.game.getTetromino().rotate(true, null));
+        keyActions.put(KeyEvent.VK_SPACE, () -> this.game.getTetromino().rotate(true, this.game.getTetrominoCenter(), this.game.getOccupied()));
+        keyActions.put(KeyEvent.VK_Z, () -> this.game.getTetromino().rotate(false, this.game.getTetrominoCenter(), this.game.getOccupied()));
+        keyActions.put(KeyEvent.VK_X, () -> this.game.getTetromino().rotate(true, this.game.getTetrominoCenter(), this.game.getOccupied()));
     }
 
     @Override
@@ -38,7 +41,7 @@ public class KeyboardInput implements KeyListener {
         int key = e.getKeyCode();
 
         // don't allow keypresses if key has a timer running
-        if (heldKeyTimers.containsKey(key)) {
+        if (debounceTimers.containsKey(key) || heldKeyTimers.containsKey(key)) {
             return;
         }
 
@@ -51,6 +54,11 @@ public class KeyboardInput implements KeyListener {
         timer.start();
         heldKeyTimers.put(key, timer);
 
+        // create a debounce timer
+        Timer debounceTimer = new Timer(DEBOUNCE_DELAY, event -> removeDebounceTimer(key));
+        debounceTimer.setRepeats(true);
+        debounceTimer.start();
+        debounceTimers.put(key, debounceTimer);
     }
 
     @Override
@@ -68,6 +76,13 @@ public class KeyboardInput implements KeyListener {
         Runnable action = keyActions.get(key);
         if (action != null) {
             action.run();
+        }
+    }
+
+    private void removeDebounceTimer(int key) {        
+        Timer timer = debounceTimers.remove(key);
+        if (timer != null) {
+            timer.stop();
         }
     }
 }
